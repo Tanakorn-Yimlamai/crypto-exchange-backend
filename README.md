@@ -173,5 +173,5 @@ In this demonstration, we will simulate a complete peer-to-peer trade. We'll fol
 5. Verify the Final State
     Action: Check the status of all orders in the system.
     Method: GET
-    URL: http://localhost:3000/api/orders/all
+    URL: http://localhost:3000/api/orders
     Result: The API returns a list of all orders. You can see that the order from Step 3 now has a status of "completed" and the taker_user_id is set to userB's ID.
