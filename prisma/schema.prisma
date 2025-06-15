@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // We are using MySQL as per the job description
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id           Int      @id @default(autoincrement())
+  username          String   @unique
+  email             String   @unique
+  password_hash     String
+  fiat_balance_thb  Decimal  @db.Decimal(18, 8)
+  fiat_balance_usd  Decimal  @db.Decimal(18, 8)
+  registration_date DateTime @default(now())
+  is_verified       Boolean  @default(false)
+
+  orders_made      Order[]       @relation("MakerOrders")
+  orders_taken     Order[]       @relation("TakerOrders")
+  wallets          Wallet[]
+  payment_methods  PaymentMethod[]
+  transactions_sent Transaction[] @relation("SenderTransactions")
+  transactions_received Transaction[] @relation("ReceiverTransactions")
+}
+
+model Cryptocurrency {
+  currency_id    Int      @id @default(autoincrement())
+  symbol         String   @unique
+  name           String
+  decimal_places Int
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  orders       Order[]
+  wallets      Wallet[]
+  transactions Transaction[]
+}
+
+model FiatCurrency {
+  fiat_id    Int      @id @default(autoincrement())
+  symbol     String   @unique @db.VarChar(5)
+  name       String   @db.VarChar(50)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  orders       Order[]
+  transactions Transaction[]
+}
+
+model Wallet {
+  wallet_id      Int      @id @default(autoincrement())
+  balance        Decimal  @db.Decimal(18, 8)
+  wallet_address String   @unique
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user           User           @relation(fields: [user_id], references: [user_id])
+  user_id        Int
+  cryptocurrency Cryptocurrency @relation(fields: [currency_id], references: [currency_id])
+  currency_id    Int
+}
+
+model Order {
+  order_id           Int      @id @default(autoincrement())
+  order_type         String   // ENUM: 'buy' or 'sell'
+  crypto_amount      Decimal  @db.Decimal(18, 8)
+  price_per_crypto   Decimal  @db.Decimal(18, 8)
+  total_fiat_amount  Decimal  @db.Decimal(18, 8)
+  status             String   // ENUM: 'pending', 'completed', etc.
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  expiry_date        DateTime?
+
+  maker              User           @relation("MakerOrders", fields: [maker_user_id], references: [user_id])
+  maker_user_id      Int
+  taker              User?          @relation("TakerOrders", fields: [taker_user_id], references: [user_id])
+  taker_user_id      Int?
+  crypto_currency    Cryptocurrency @relation(fields: [crypto_currency_id], references: [currency_id])
+  crypto_currency_id Int
+  fiat_currency      FiatCurrency   @relation(fields: [fiat_currency_id], references: [fiat_id])
+  fiat_currency_id   Int
+  transactions       Transaction[]
+}
+
+model Transaction {
+  transaction_id     Int       @id @default(autoincrement())
+  transaction_type   String    // ENUM: 'p2p_buy_crypto', etc.
+  amount             Decimal   @db.Decimal(18, 8)
+  transaction_fee    Decimal   @db.Decimal(18, 8)
+  status             String    // ENUM: 'pending', 'completed', etc.
+  transaction_date   DateTime  @default(now())
+  external_address   String?
+  tx_hash            String?   @unique
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  sender             User?           @relation("SenderTransactions", fields: [sender_user_id], references: [user_id])
+  sender_user_id     Int?
+  receiver           User?           @relation("ReceiverTransactions", fields: [receiver_user_id], references: [user_id])
+  receiver_user_id   Int?
+  order              Order?          @relation(fields: [order_id], references: [order_id])
+  order_id           Int?
+  crypto_currency    Cryptocurrency? @relation(fields: [crypto_currency_id], references: [currency_id])
+  crypto_currency_id Int?
+  fiat_currency      FiatCurrency?   @relation(fields: [fiat_currency_id], references: [fiat_id])
+  fiat_currency_id   Int?
+}
+
+model PaymentMethod {
+  payment_method_id Int      @id @default(autoincrement())
+  method_type       String   // ENUM: 'bank_transfer', etc.
+  details           Json?    // Use Json? for optional Json in MySQL
+  is_verified       Boolean  @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  user    User @relation(fields: [user_id], references: [user_id])
+  user_id Int
+}
