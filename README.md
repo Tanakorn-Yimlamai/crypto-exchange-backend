@@ -12,6 +12,16 @@
 
 ---
 
+---
+
+## Database Design (ER Diagram)
+
+The following diagram illustrates the database schema design for the application.
+
+![ER Diagram](./Database-ER-diagram.png)
+
+---
+
 ## Setup and Installation
 
 **Prerequisites:**

@@ -39,9 +39,9 @@ exports.getOpenOrders = async (req, res) => {
   try {
     const openOrders = await prisma.order.findMany({
       include: {
-        maker: true,           // Includes related user data
-        crypto_currency: true, // Includes crypto data
-        fiat_currency: true,   // Includes fiat data
+        maker: true,           
+        crypto_currency: true, 
+        fiat_currency: true,   
       },
       orderBy: { created_at: 'desc' },
     });

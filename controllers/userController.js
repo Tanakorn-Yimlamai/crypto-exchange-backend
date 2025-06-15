@@ -1,4 +1,3 @@
-// In controllers/userController.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -15,7 +14,7 @@ exports.createUser = async (req, res) => {
       data: {
         username: username,
         email: email,
-        password_hash: password, // In a real application, you should hash the password before storing it
+        password_hash: password, 
         fiat_balance_thb: 0,
         fiat_balance_usd: 0,
       },
