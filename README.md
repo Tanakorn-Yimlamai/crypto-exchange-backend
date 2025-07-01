@@ -1,4 +1,4 @@
-# Crypto Exchange - Backend Assignment
+# Crypto Exchange - Backend Project
 
 ---
 
